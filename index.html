@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedFlow OS - Triagem Hospitalar</title>
+    <style>
+        :root {
+            --bg-principal: #f4f7f9;
+            --bg-card: #ffffff;
+            --azul-hospitalar: #0077b6;
+            --azul-escuro: #03045e;
+            --verde-saude: #00b4d8;
+            --texto-principal: #2b2d42;
+            --texto-secundario: #6c757d;
+            --borda: #e2e8f0;
+            --grave-vermelho: #d90429;
+            --grave-laranja: #f77f00;
+            --grave-amarelo: #fcbf49;
+            --grave-verde: #38b000;
+            --grave-azul: #00b4d8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-principal);
+            color: var(--texto-principal);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: var(--azul-escuro);
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        header .logo {
+            font-weight: bold;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        header .status-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        header .status-bar {
+            font-size: 0.9rem;
+            color: var(--verde-saude);
+        }
+
+        header .btn-logout {
+            background: transparent;
+            color: #ff4d4d;
+            border: 1px solid #ff4d4d;
+            padding: 4px 10px;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        header .btn-logout:hover {
+            background: #ff4d4d;
+            color: white;
+        }
+
+        main {
+            flex: 1;
+            padding: 20px;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .titulo-sessao {
+            margin-bottom: 20px;
+            color: var(--azul-hospitalar);
+            font-size: 1.5rem;
+            border-bottom: 2px solid var(--borda);
+            padding-bottom: 8px;
+        }
+
+        .painel-triagem {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .painel-triagem {
+                grid-template-columns: 2fr 1fr;
+            }
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid var(--borda);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        @media (min-width: 480px) {
+            .form-row.dois-campos { grid-template-columns: 1fr 1fr; }
+            .form-row.tres-campos { grid-template-columns: 1fr 1fr 1fr; }
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="time"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--borda);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            background-color: #fafafa;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--azul-hospitalar);
+            background-color: #fff;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .seletor-gravidade {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        @media (min-width: 380px) { .seletor-gravidade { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 992px) { .seletor-gravidade { grid-template-columns: repeat(5, 1fr); } }
+
+        .opcao-gravidade { position: relative; }
+        .opcao-gravidade input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .opcao-gravidade label {
+            display: block;
+            text-align: center;
+            padding: 12px 5px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            font-size: 0.85rem;
+            opacity: 0.6;
+            transition: all 0.2s;
+        }
+
+        .opcao-gravidade.vermelho label { background-color: var(--grave-vermelho); }
+        .opcao-gravidade.laranja label { background-color: var(--grave-laranja); }
+        .opcao-gravidade.amarelo label { background-color: var(--grave-amarelo); color: #2b2d42; }
+        .opcao-gravidade.verde label { background-color: var(--grave-verde); }
+        .opcao-gravidade.azul label { background-color: var(--grave-azul); }
+
+        .opcao-gravidade input[type="radio"]:checked + label {
+            opacity: 1;
+            transform: scale(1.04);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+            outline: 2px solid var(--texto-principal);
+        }
+
+        .btn-container {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .btn-salvar {
+            background-color: var(--azul-hospitalar);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .btn-salvar:hover { background-color: var(--azul-escuro); }
+        @media (min-width: 480px) { .btn-salvar { width: auto; } }
+
+        .info-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .card-subtitulo {
+            font-size: 1.1rem;
+            color: var(--azul-escuro);
+            margin-bottom: 12px;
+            font-weight: bold;
+        }
+
+        .lista-espera { list-style: none; }
+        .lista-espera li {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--borda);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+
+        .lista-espera li:last-child { border-bottom: none; }
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .badge.vermelho { background-color: var(--grave-vermelho); }
+        .badge.laranja { background-color: var(--grave-laranja); }
+        .badge.amarelo { background-color: var(--grave-amarelo); color: #2b2d42; }
+        .badge.verde { background-color: var(--grave-verde); }
+        .badge.azul { background-color: var(--grave-azul); }
+
+        /* Estilos Novos: Botão de Histórico e Tela Modal */
+        .btn-pesquisa-historico {
+            background-color: var(--azul-hospitalar);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .btn-pesquisa-historico:hover {
+            background-color: var(--azul-escuro);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s, opacity 0.2s;
+        }
+
+        .modal-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 25px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--borda);
+            padding-bottom: 10px;
+        }
+
+        .modal-header h3 {
+            color: var(--azul-escuro);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--texto-secundario);
+        }
+
+        .barra-busca-historico {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .tabela-historico {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            margin-top: 15px;
+        }
+
+        .tabela-historico th, .tabela-historico td {
+            border: 1px solid var(--borda);
+            padding: 10px;
+            text-align: left;
+        }
+
+        .tabela-historico th {
+            background-color: var(--bg-principal);
+            color: var(--azul-escuro);
+            font-weight: 600;
+        }
+
+        .nenhum-resultado {
+            text-align: center;
+            color: var(--texto-secundario);
+            padding: 20px 0;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <script>
+        if (localStorage.getItem('medflow_logado') !== 'true') {
+            window.location.href = 'login.html';
+        }
+
+        // Função auxiliar para fazer logoff do sistema
+        function fazerLogout() {
+            localStorage.removeItem('medflow_logado');
+            window.location.href = 'login.html';
+        }
+    </script>
+
+    <header>
+        <div class="logo">✚ MedFlow OS v2.4</div>
+        <div class="status-container">
+            <div class="status-bar">Enf. Responsável: Online</div>
+            <button class="btn-logout" onclick="fazerLogout()">Sair</button>
+        </div>
+    </header>
+
+    <main>
+        <h2 class="titulo-sessao">Módulo de Triagem Hospitalar</h2>
+
+        <div class="painel-triagem">
+            <section class="card">
+                <h3 class="card-subtitulo">Nova Ficha de Atendimento</h3>
+                <form onsubmit="event.preventDefault(); alert('Paciente triado com sucesso!');">
+                    
+                    <div class="form-row dois-campos">
+                        <div class="form-group">
+                            <label for="nome">Nome Completo do Paciente</label>
+                            <input type="text" id="nome" required placeholder="Ex: João Silva Santos">
+                        </div>
+                        <div class="form-group">
+                            <label for="documento">CPF / Documento</label>
+                            <input type="text" id="documento" required placeholder="000.000.000-00">
+                        </div>
+                    </div>
+
+                    <div class="form-row tres-campos">
+                        <div class="form-group">
+                            <label for="idade">Idade</label>
+                            <input type="number" id="idade" required min="0" max="150" placeholder="Anos">
+                        </div>
+                        <div class="form-group">
+                            <label for="genero">Gênero Biológico</label>
+                            <select id="genero" required>
+                                <option value="" disabled selected>Selecione...</option>
+                                <option value="M">Masculino</option>
+                                <option value="F">Feminino</option>
+                                <option value="O">Outro</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="hora">Hora de Chegada</label>
+                            <input type="time" id="hora" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row tres-campos">
+                        <div class="form-group">
+                            <label for="pa">Pressão Arterial (PA)</label>
+                            <input type="text" id="pa" placeholder="Ex: 120/80">
+                        </div>
+                        <div class="form-group">
+                            <label for="temp">Temperatura (°C)</label>
+                            <input type="number" id="temp" step="0.1" placeholder="Ex: 36.5">
+                        </div>
+                        <div class="form-group">
+                            <label for="sat">Saturação O₂ (%)</label>
+                            <input type="number" id="sat" placeholder="Ex: 98">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="sintomas">Queixa Principal / Sintomas Relatados</label>
+                        <textarea id="sintomas" placeholder="Descreva brevemente os sintomas..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Classificação de Gravidade (Protocolo)</label>
+                        <div class="seletor-gravidade">
+                            <div class="opcao-gravidade vermelho">
+                                <input type="radio" id="grav-emergencia" name="gravidade" value="emergencia" required>
+                                <label for="grav-emergencia">Emergência</label>
+                            </div>
+                            <div class="opcao-gravidade laranja">
+                                <input type="radio" id="grav-muito-urgente" name="gravidade" value="muito-urgente">
+                                <label for="grav-muito-urgente">Muito Urgente</label>
+                            </div>
+                            <div class="opcao-gravidade amarelo">
+                                <input type="radio" id="grav-urgente" name="gravidade" value="urgente">
+                                <label for="grav-urgente">Urgente</label>
+                            </div>
+                            <div class="opcao-gravidade verde">
+                                <input type="radio" id="grav-pouco-urgente" name="gravidade" value="pouco-urgente">
+                                <label for="grav-pouco-urgente">Pouco Urgente</label>
+                            </div>
+                            <div class="opcao-gravidade azul">
+                                <input type="radio" id="grav-nao-urgente" name="gravidade" value="nao-urgente">
+                                <label for="grav-nao-urgente">Não Urgente</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="btn-container">
+                        <button type="submit" class="btn-salvar">Salvar Ficha e Emitir Pulseira</button>
+                    </div>
+                </form>
+            </section>
+
+            <aside class="info-sidebar">
+                <div class="card">
+                    <h3 class="card-subtitulo">Painel do Plantão</h3>
+                    <ul class="lista-espera">
+                        <li><span>Aguardando Atendimento:</span> <strong>14</strong></li>
+                        <li><span>Tempo Médio de Espera:</span> <strong>22 min</strong></li>
+                    </ul>
+                    <button class="btn-pesquisa-historico" onclick="abrirModalHistorico()">🔍 Buscar Histórico por CPF</button>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-subtitulo">Últimos Triados</h3>
+                    <ul class="lista-espera">
+                        <li><span>Carlos A. Souza</span> <span class="badge vermelho">Emergência</span></li>
+                        <li><span>Maria Oliveira</span> <span class="badge amarelo">Urgente</span></li>
+                        <li><span>Lucas Lima</span> <span class="badge verde">Pouco Urgente</span></li>
+                    </ul>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="modalHistorico">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Histórico de Atendimentos</h3>
+                <button class="modal-close" onclick="fecharModalHistorico()">&times;</button>
+            </div>
+            
+            <div class="barra-busca-historico">
+                <input type="text" id="buscaCpf" placeholder="Digite o CPF do paciente (Ex: 111.111.111-11)">
+                <button class="btn-salvar" style="padding: 0 20px;" onclick="executarBuscaHistorico()">Buscar</button>
+            </div>
+
+            <div id="resultadoHistorico">
+                <p class="nenhum-resultado">Insira o CPF do paciente acima para buscar atendimentos anteriores.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Banco de dados simulado para testes na interface
+        const bancoDadosAtendimentos = [
+            { cpf: '111.111.111-11', paciente: 'Carlos A. Souza', data: '12/06/2026', hora: '08:30', gravidade: 'Emergência', badge: 'vermelho', queixa: 'Dor aguda no peito irradiando para o braço esquerdo.' },
+            { cpf: '111.111.111-11', paciente: 'Carlos A. Souza', data: '15/04/2026', hora: '14:20', gravidade: 'Urgente', badge: 'amarelo', queixa: 'Crise hipertensiva (PA 180/110).' },
+            { cpf: '222.222.222-22', paciente: 'Maria Oliveira', data: '12/06/2026', hora: '09:15', gravidade: 'Urgente', badge: 'amarelo', queixa: 'Febre alta (39.1°C) persistente e fortes dores de cabeça.' },
+            { cpf: '333.333.333-33', paciente: 'Lucas Lima', data: '12/06/2026', hora: '10:02', gravidade: 'Pouco Urgente', badge: 'verde', queixa: 'Entorse leve no tornozelo direito após queda.' }
+        ];
+
+        function abrirModalHistorico() {
+            document.getElementById('modalHistorico').classList.add('active');
+            document.getElementById('buscaCpf').value = '';
+            document.getElementById('resultadoHistorico').innerHTML = '<p class="nenhum-resultado">Insira o CPF do paciente acima para buscar atendimentos anteriores.</p>';
+        }
+
+        function fecharModalHistorico() {
+            document.getElementById('modalHistorico').classList.remove('active');
+        }
+
+        function executarBuscaHistorico() {
+            const cpfBuscado = document.getElementById('buscaCpf').value.trim();
+            const containerResultado = document.getElementById('resultadoHistorico');
+
+            if (!cpfBuscado) {
+                alert('Por favor, digite um CPF para realizar a busca.');
+                return;
+            }
+
+            // Filtra os registros no banco fictício pelo CPF digitado
+            const resultados = bancoDadosAtendimentos.filter(registro => registro.cpf === cpfBuscado);
+
+            if (resultados.length === 0) {
+                containerResultado.innerHTML = `<p class="nenhum-resultado">Nenhum histórico encontrado para o CPF ${cpfBuscado}.</p>`;
+                return;
+            }
+
+            // Monta a tabela se encontrar dados
+            let htmlTabela = `
+                <div style="margin-bottom: 10px;"><strong>Paciente:</strong> ${resultados[0].paciente}</div>
+                <table class="tabela-historico">
+                    <thead>
+                        <tr>
+                            <th>Data/Hora</th>
+                            <th>Classificação</th>
+                            <th>Queixa / Sintomas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            resultados.forEach(item => {
+                htmlTabela += `
+                    <tr>
+                        <td style="white-space: nowrap;">${item.data}<br><small>${item.hora}</small></td>
+                        <td><span class="badge ${item.badge}">${item.gravidade}</span></td>
+                        <td>${item.queixa}</td>
+                    </tr>
+                `;
+            });
+
+            htmlTabela += `
+                    </tbody>
+                </table>
+            `;
+
+            containerResultado.innerHTML = htmlTabela;
+        }
+    </script>
+
+</body>
+</html>

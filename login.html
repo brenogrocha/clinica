@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedFlow OS - Login</title>
+    <style>
+        :root {
+            --bg-principal: #f4f7f9;
+            --bg-card: #ffffff;
+            --azul-hospitalar: #0077b6;
+            --azul-escuro: #03045e;
+            --texto-principal: #2b2d42;
+            --borda: #e2e8f0;
+            --grave-vermelho: #d90429;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-principal);
+            color: var(--texto-principal);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            border: 1px solid var(--borda);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .login-header .logo {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: var(--azul-escuro);
+            margin-bottom: 5px;
+        }
+
+        .login-header p {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--borda);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            background-color: #fafafa;
+            transition: all 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--azul-hospitalar);
+            background-color: #fff;
+        }
+
+        .error-message {
+            color: var(--grave-vermelho);
+            font-size: 0.85rem;
+            margin-top: 5px;
+            display: none;
+            font-weight: 500;
+        }
+
+        .btn-login {
+            background-color: var(--azul-hospitalar);
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+
+        .btn-login:hover {
+            background-color: var(--azul-escuro);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <div class="login-header">
+            <div class="logo">✚ MedFlow OS</div>
+            <p>Controle de Triagem Hospitalar</p>
+        </div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Usuário</label>
+                <input type="text" id="username" required placeholder="Digite seu usuário">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Senha</label>
+                <input type="password" id="password" required placeholder="Digite sua senha">
+                <div class="error-message" id="errorMsg">Usuário ou senha incorretos!</div>
+            </div>
+
+            <button type="submit" class="btn-login">Acessar Sistema</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Impede o envio padrão do formulário
+            
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            const errorMsg = document.getElementById('errorMsg');
+
+            // Validação das credenciais solicitadas
+            if (user === 'admin' && pass === '123') {
+                errorMsg.style.display = 'none';
+                // Salva uma sessão temporária no navegador para validar o acesso
+                localStorage.setItem('medflow_logado', 'true');
+                // Redireciona para a página principal
+                window.location.href = 'index.html';
+            } else {
+                // Mostra mensagem de erro caso erre os dados
+                errorMsg.style.display = 'block';
+            }
+        });
+    </script>
+
+</body>
+</html>
